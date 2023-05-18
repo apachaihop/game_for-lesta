@@ -3,7 +3,8 @@
 #include <cstdlib>
 #include <fstream>
 #include <memory>
-
+//@ TODO add something like sprite in sfml
+//@ TODO add draw texture without vertisies
 using namespace eng;
 int main()
 {
