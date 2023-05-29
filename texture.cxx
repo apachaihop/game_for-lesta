@@ -44,8 +44,13 @@ texture::texture(std::string path)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     stbi_image_free(data);
     texID = texture;
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
 GLuint texture::get_ID()
 {
     return texID;
+}
+void texture::bind()
+{
+    glBindTexture(GL_TEXTURE_2D, texID);
 }

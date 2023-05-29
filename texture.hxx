@@ -16,6 +16,7 @@ class texture
 public:
     texture(std::string path);
     GLuint get_ID();
+    void   bind();
 };
 
 #endif // OPENGL_WINDOW_TEXTURE_HXX
