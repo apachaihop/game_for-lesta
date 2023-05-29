@@ -1,4 +1,5 @@
 #include "engine.hxx"
+#include "texture.hxx"
 #include <SDL_events.h>
 #include <cstdlib>
 #include <fstream>
@@ -14,8 +15,8 @@ int main()
 
     engine->initialize_engine();
 
-    int tex_fone = engine->load_texture("fone.png");
-    int tex_tank = engine->load_texture("tank.png");
+    texture tex_fone("fone.png");
+    texture tex_tank("tank.png");
 
     eng::vertex   v0 = { 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 2.0f, 1.0f };
     eng::vertex   v1 = { 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 2.0f, 0.0f };
@@ -89,8 +90,8 @@ int main()
 
         transform = glm::translate(transform, glm::vec3(-cur_x, -cur_y, 0.0f));
 
-        engine->draw_texture(t1, t2, tex_fone, transform0);
-        engine->draw_texture(t3, t4, tex_tank, transform);
+        engine->draw_texture(t1, t2, tex_fone.get_ID(), transform0);
+        engine->draw_texture(t3, t4, tex_tank.get_ID(), transform);
         engine->swap_buff();
         dx    = 0.0f;
         dy    = 0.0f;
