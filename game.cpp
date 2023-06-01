@@ -68,7 +68,6 @@ int main()
                 if (e.key.keysym.sym == SDLK_s)
                 {
                     dy -= 0.01f;
-                    angle = -180.0f;
                 }
                 if (e.key.keysym.sym == SDLK_d)
                 {
