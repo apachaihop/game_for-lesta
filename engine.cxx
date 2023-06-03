@@ -16,9 +16,11 @@
 #include "stb_image.h"
 
 #include "shader.hxx"
+#include "sprite.hxx"
 #include "texture.hxx"
 
 #include "engine.hxx"
+
 namespace eng
 {
 #define OM_GL_CHECK()                                                          \

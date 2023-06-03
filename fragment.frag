@@ -1,11 +1,13 @@
 #version 320 es
-
 precision mediump float;
-out vec4 FragColor;
-in vec3 ourColor;
-in vec2 TexCoord;
-uniform sampler2D ourTexture;
+
+in mediump vec2 TexCoords;
+out mediump vec4 color;
+
+uniform sampler2D image;
+uniform mediump vec3 spriteColor;
+
 void main()
 {
-    FragColor = texture(ourTexture, TexCoord);
+    color = vec4(spriteColor, 1.0) * texture(image, TexCoords);
 }

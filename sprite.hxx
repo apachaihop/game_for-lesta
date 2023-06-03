@@ -15,7 +15,7 @@
 class sprite
 {
 public:
-    sprite(shader& shader);
+    sprite(shader& s);
 
     ~sprite();
 
@@ -26,7 +26,7 @@ public:
                     glm::vec3 color  = glm::vec3(1.0f));
 
 private:
-    shader       shader;
+    shader       s;
     unsigned int quadVAO;
 
     void initRenderData();

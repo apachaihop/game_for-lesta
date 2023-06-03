@@ -4,6 +4,7 @@
 
 #ifndef OPENGL_WINDOW_SHADER_HXX
 #define OPENGL_WINDOW_SHADER_HXX
+#include "engine.hxx"
 #include "glad/glad.h"
 #include <fstream>
 #include <glm/glm.hpp>
@@ -12,6 +13,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+
 class shader
 {
     GLuint ID;

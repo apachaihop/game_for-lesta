@@ -3,11 +3,11 @@
 //
 
 #include "sprite.hxx"
+#include "engine.hxx"
 #include "shader.hxx"
-
 sprite::sprite(class shader& s)
 {
-    this->shader = s;
+    this->s = s;
     this->initRenderData();
 }
 
@@ -23,7 +23,7 @@ void sprite::DrawSprite(texture&  texture,
                         glm::vec3 color)
 {
     // prepare transformations
-    this->shader.use();
+    this->s.use();
     glm::mat4 model = glm::mat4(1.0f);
     model           = glm::translate(
         model,
@@ -46,14 +46,13 @@ void sprite::DrawSprite(texture&  texture,
 
     model = glm::scale(model, glm::vec3(size, 1.0f));     // last scale
 
-    this->shader.setMat4("model", model);
+    this->s.setMat4("model", model);
 
     // render textured quad
-    this->shader.setVec3("spriteColor", color.x, color.y, color.z);
-    
-    glActiveTexture(GL_TEXTURE0);
+    this->s.setVec3("spriteColor", color.x, color.y, color.z);
     texture.bind();
-
+    glActiveTexture(GL_TEXTURE0);
+    s.setInt("image", 0);
     glBindVertexArray(this->quadVAO);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindVertexArray(0);

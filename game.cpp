@@ -1,11 +1,20 @@
 #include "engine.hxx"
+#include "shader.hxx"
+#include "sprite.hxx"
 #include "texture.hxx"
 #include <SDL_events.h>
 #include <cstdlib>
 #include <fstream>
+#include <glm/ext/matrix_transform.hpp>
+#include <glm/fwd.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <memory>
-//@ TODO add something like sprite in sfml
-//@ TODO add draw texture without vertisies
+//@ TODO add game class
+//@ TODO add camera class
+//@ TODO add imgui simple menu
+//@ TODO add sound
+//@ TODO think about shadows
+//@TODO add game obj and heritances from it
 using namespace eng;
 int main()
 {
@@ -34,11 +43,21 @@ int main()
 
     glm::mat4 transform  = glm::mat4(1.0f);
     glm::mat4 transform0 = glm::mat4(1.0f);
-
-    float aspect_ratio = width / height;
-
-    transform  = glm::scale(transform, glm::vec3(1.0f, aspect_ratio, 1.0f));
-    transform0 = glm::scale(transform0, glm::vec3(1.0f, aspect_ratio, 1.0f));
+    shader    shader_for_tank("vertex.vert", "fragment.frag");
+    shader    shader_for_fone("vertex.vert", "fragment.frag");
+    sprite    tank(shader_for_tank);
+    sprite    fone(shader_for_fone);
+    float     aspect_ratio = width / height;
+    glm::mat4 projection   = glm::ortho(0.0f,
+                                      static_cast<float>(width),
+                                      static_cast<float>(height),
+                                      0.0f,
+                                      -1.0f,
+                                      1.0f);
+    shader_for_tank.use();
+    shader_for_tank.setMat4("projection", projection);
+    shader_for_fone.use();
+    shader_for_fone.setMat4("projection", projection);
 
     float angle = 0.0f;
     float dx    = 0.0f;
@@ -81,20 +100,18 @@ int main()
                 }
             }
         }
-        transform = glm::translate(transform, glm::vec3(cur_x, cur_y, 0.0f));
-        transform = glm::translate(transform, glm::vec3(dx, dy, 0.0f));
+        fone.DrawSprite(tex_fone,
+                        glm::vec2(0.0f, 0.0f),
+                        glm::vec2(width, height),
+                        0.0f,
+                        glm::vec3(1.0f, 1.0f, 1.0f));
+        tank.DrawSprite(tex_tank,
+                        glm::vec2(10, height - 40),
+                        glm::vec2(40.0f, 40.0f),
+                        0.0f,
+                        glm::vec3(1.0f, 1.0f, 1.0f));
 
-        transform = glm::rotate(
-            transform, glm::radians(angle), glm::vec3(0.0, 0.0, 1.0));
-
-        transform = glm::translate(transform, glm::vec3(-cur_x, -cur_y, 0.0f));
-
-        engine->draw_texture(t1, t2, tex_fone.get_ID(), transform0);
-        engine->draw_texture(t3, t4, tex_tank.get_ID(), transform);
         engine->swap_buff();
-        dx    = 0.0f;
-        dy    = 0.0f;
-        angle = 0;
     }
 
     return EXIT_SUCCESS;
