@@ -4,11 +4,8 @@
 #include "texture.hxx"
 #include <SDL_events.h>
 #include <cstdlib>
-#include <fstream>
-#include <glm/ext/matrix_transform.hpp>
-#include <glm/fwd.hpp>
-#include <glm/gtc/type_ptr.hpp>
 #include <memory>
+
 //@ TODO add game class
 //@ TODO add camera class
 //@ TODO add imgui simple menu
@@ -100,11 +97,13 @@ int main()
                 }
             }
         }
+
         fone.DrawSprite(tex_fone,
                         glm::vec2(0.0f, 0.0f),
                         glm::vec2(width, height),
                         0.0f,
                         glm::vec3(1.0f, 1.0f, 1.0f));
+
         tank.DrawSprite(tex_tank,
                         glm::vec2(10, height - 40),
                         glm::vec2(40.0f, 40.0f),
