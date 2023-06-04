@@ -19,6 +19,7 @@ add_executable(
         shader.cxx
         texture.cxx
         sprite.cxx)
-
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/imgui)
+target_link_libraries(opengl_window PRIVATE imgui)
 target_link_libraries(opengl_window PRIVATE SDL3::SDL3-shared glm::glm)
 

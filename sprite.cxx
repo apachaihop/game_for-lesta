@@ -5,6 +5,34 @@
 #include "sprite.hxx"
 #include "engine.hxx"
 #include "shader.hxx"
+#define OM_GL_CHECK()                                                          \
+    {                                                                          \
+        const int err = static_cast<int>(glGetError());                        \
+        if (err != GL_NO_ERROR)                                                \
+        {                                                                      \
+            switch (err)                                                       \
+            {                                                                  \
+                case GL_INVALID_ENUM:                                          \
+                    std::cerr << "GL_INVALID_ENUM" << std::endl;               \
+                    break;                                                     \
+                case GL_INVALID_VALUE:                                         \
+                    std::cerr << "GL_INVALID_VALUE" << std::endl;              \
+                    break;                                                     \
+                case GL_INVALID_OPERATION:                                     \
+                    std::cerr << "GL_INVALID_OPERATION" << std::endl;          \
+                    break;                                                     \
+                case GL_INVALID_FRAMEBUFFER_OPERATION:                         \
+                    std::cerr << "GL_INVALID_FRAMEBUFFER_OPERATION"            \
+                              << std::endl;                                    \
+                    break;                                                     \
+                case GL_OUT_OF_MEMORY:                                         \
+                    std::cerr << "GL_OUT_OF_MEMORY" << std::endl;              \
+                    break;                                                     \
+            }                                                                  \
+            assert(false);                                                     \
+        }                                                                      \
+    }
+
 sprite::sprite(class shader& s)
 {
     this->s = s;
@@ -47,14 +75,18 @@ void sprite::DrawSprite(texture&  texture,
     model = glm::scale(model, glm::vec3(size, 1.0f));     // last scale
 
     this->s.setMat4("model", model);
-
+    OM_GL_CHECK()
     // render textured quad
     this->s.setVec3("spriteColor", color.x, color.y, color.z);
+    OM_GL_CHECK()
     texture.bind();
+    OM_GL_CHECK()
     glActiveTexture(GL_TEXTURE0);
+    OM_GL_CHECK()
     s.setInt("image", 0);
     glBindVertexArray(this->quadVAO);
     glDrawArrays(GL_TRIANGLES, 0, 6);
+    OM_GL_CHECK()
     glBindVertexArray(0);
 }
 

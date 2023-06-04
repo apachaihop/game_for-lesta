@@ -58,16 +58,10 @@ struct triangle
 class engine
 {
 public:
-    virtual bool initialize_engine()                     = 0;
-    virtual bool get_input(event& e)                     = 0;
-    virtual bool rebind_key()                            = 0;
-    virtual void draw_triangle(triangle t1, triangle t2) = 0;
-    virtual bool swap_buff()                             = 0;
-    virtual int  load_texture(std::string path)          = 0;
-    virtual bool draw_texture(triangle  t1,
-                              triangle  t2,
-                              int       texHandle,
-                              glm::mat4 transform)       = 0;
+    virtual bool initialize_engine() = 0;
+    virtual bool get_input(event& e) = 0;
+    virtual bool rebind_key()        = 0;
+    virtual bool swap_buff()         = 0;
 };
 
 engine* create_engine();

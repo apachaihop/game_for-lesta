@@ -110,7 +110,6 @@ int main()
                         glm::vec2(40.0f, 40.0f),
                         0.0f,
                         glm::vec3(1.0f, 1.0f, 1.0f));
-
         engine->swap_buff();
     }
 

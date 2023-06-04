@@ -1,4 +1,4 @@
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #include <SDL_init.h>
 #include <SDL_video.h>
 
@@ -13,6 +13,9 @@
 #include <vector>
 
 #include "glad/glad.h"
+#include "imgui.h"
+#include "imgui_impl_opengl3.h"
+#include "imgui_impl_sdl3.h"
 #include "stb_image.h"
 
 #include "shader.hxx"
@@ -90,25 +93,76 @@ class engine_impl final : public eng::engine
 
 public:
     bool initialize_engine() final;
-
-    void draw_triangle(eng::triangle t1, eng::triangle t2) final;
-
-    int load_texture(std::string path) final;
-
-    bool draw_texture(eng::triangle t1,
-                      eng::triangle t2,
-                      int           texHandle,
-                      glm::mat4     transform) final;
     bool get_input(event& e) final;
     bool rebind_key() final;
     bool swap_buff() final
     {
-        SDL_GL_SwapWindow(window);
+        bool     show_demo_window    = true;
+        bool     show_another_window = false;
+        ImGuiIO& io                  = ImGui::GetIO();
+        (void)io;
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplSDL3_NewFrame();
+        ImGui::NewFrame();
 
+        // 1. Show the big demo window (Most of the sample code is in
+        // ImGui::ShowDemoWindow()! You can browse its code to learn more about
+        // Dear ImGui!).
+        ImGui::ShowDemoWindow(&show_demo_window);
+        {
+            static float f       = 0.0f;
+            static int   counter = 0;
+
+            ImGui::Begin("Hello, world!"); // Create a window called "Hello,
+                                           // world!" and append into it.
+
+            ImGui::Text(
+                "This is some useful text."); // Display some text (you can use
+                                              // a format strings too)
+            ImGui::Checkbox("Demo Window",
+                            &show_demo_window); // Edit bools storing our window
+                                                // open/close state
+            ImGui::Checkbox("Another Window", &show_another_window);
+
+            ImGui::SliderFloat(
+                "float",
+                &f,
+                0.0f,
+                1.0f); // Edit 1 float using a slider from 0.0f to 1.0f
+                       // Edit 3 floats representing a color
+
+            if (ImGui::Button(
+                    "Button")) // Buttons return true when clicked (most widgets
+                               // return true when edited/activated)
+                counter++;
+            ImGui::SameLine();
+            ImGui::Text("counter = %d", counter);
+
+            ImGui::End();
+        }
+
+        // 3. Show another simple window.
+        if (show_another_window)
+        {
+            ImGui::Begin(
+                "Another Window",
+                &show_another_window); // Pass a pointer to our bool variable
+                                       // (the window will have a closing button
+                                       // that will clear the bool when clicked)
+            ImGui::Text("Hello from another window!");
+            if (ImGui::Button("Close Me"))
+                show_another_window = false;
+            ImGui::End();
+        }
+
+        ImGui::Render();
+        glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         OM_GL_CHECK()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         OM_GL_CHECK()
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        SDL_GL_SwapWindow(window);
         return true;
     }
 };
@@ -129,6 +183,7 @@ bool engine_impl::rebind_key()
     binded_keys.erase(it);
     binded_keys.push_back(new_key);
 }
+
 bool engine_impl::initialize_engine()
 {
     if (SDL_Init(SDL_INIT_VIDEO))
@@ -141,6 +196,8 @@ bool engine_impl::initialize_engine()
 
     atexit(SDL_Quit);
 
+    const char* glsl_version = "#version 100";
+
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
@@ -148,6 +205,8 @@ bool engine_impl::initialize_engine()
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
+    SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1");
 
     window =
         SDL_CreateWindow("GLES3.2", eng::width, eng::height, SDL_WINDOW_OPENGL);
@@ -215,152 +274,25 @@ bool engine_impl::initialize_engine()
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     OM_GL_CHECK();
     glViewport(0, 0, width, height);
-    return true;
-}
-int engine_impl::load_texture(std::string path)
-{
-    int width, height, nrChannels;
-    stbi_set_flip_vertically_on_load(true);
-    unsigned char* data =
-        stbi_load(path.c_str(), &width, &height, &nrChannels, 0);
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    (void)io;
+    io.ConfigFlags |=
+        ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
+    io.ConfigFlags |=
+        ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
 
-    unsigned int texture;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
+    // Setup Dear ImGui style
+    ImGui::StyleColorsDark();
+    // ImGui::StyleColorsLight();
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    if (data)
-    {
-        glTexImage2D(GL_TEXTURE_2D,
-                     0,
-                     GL_RGBA,
-                     width,
-                     height,
-                     0,
-                     GL_RGBA,
-                     GL_UNSIGNED_BYTE,
-                     data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
-    else
-    {
-        std::cout << "Failed to load texture" << std::endl;
-        return false;
-    }
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    // Setup Platform/Renderer backends
+    ImGui_ImplSDL3_InitForOpenGL(window, context);
     OM_GL_CHECK()
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    ImGui_ImplOpenGL3_Init(glsl_version);
     OM_GL_CHECK()
 
-    glEnable(GL_BLEND);
-
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    stbi_image_free(data);
-    return texture;
-}
-
-void engine_impl::draw_triangle(eng::triangle t1, eng::triangle t2)
-{
-    shader s("/home/apachai/CLionProjects/opengl_window/vertex.vert",
-             "/home/apachai/CLionProjects/opengl_window/fragment.frag");
-
-    float        vertices[] = { 1.0f,  1.0f,  0.0f, 1.0f,  -1.0f, 0.0f,
-                                -1.0f, -1.0f, 0.0f, -1.0f, 1.0f,  0.0f };
-    unsigned int indices[]  = { 0, 1, 3, 1, 2, 3 };
-    GLuint       VAO;
-    glGenVertexArrays(1, &VAO);
-
-    GLuint VBO;
-    glGenBuffers(1, &VBO);
-
-    GLuint EBO;
-    glGenBuffers(1, &EBO);
-
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(
-        GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(
-        0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    int vertexTimeLocation  = glGetUniformLocation(ID, "time");
-    int vertexColorLocation = glGetUniformLocation(ID, "resol");
-
-    s.use();
-    float time = SDL_GetTicks() / 100;
-    glUniform1f(vertexTimeLocation, 3.14159 * time / 8);
-    glUniform2f(vertexColorLocation, eng::width, eng::height);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
-    OM_GL_CHECK()
-}
-bool engine_impl::draw_texture(eng::triangle t1,
-                               eng::triangle t2,
-                               int           texHandle,
-                               glm::mat4     transform)
-{
-
-    shader s("vertex.vert", "fragment.frag");
-
-    eng::vertex vertices[] = {
-        t1.v[0],
-        t1.v[1],
-        t1.v[2],
-        t2.v[0],
-    };
-    unsigned int indices[] = {
-        0, 1, 3, // first triangle
-        1, 2, 3  // second triangle
-    };
-    unsigned int VBO, VAO, EBO;
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
-
-    glBindVertexArray(VAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(
-        GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    // position attribute
-    glVertexAttribPointer(
-        0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    // color attribute
-    glVertexAttribPointer(1,
-                          3,
-                          GL_FLOAT,
-                          GL_FALSE,
-                          8 * sizeof(float),
-                          (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-    // texture coord attribute
-    glVertexAttribPointer(2,
-                          2,
-                          GL_FLOAT,
-                          GL_FALSE,
-                          8 * sizeof(float),
-                          (void*)(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);
-    s.use();
-
-    glBindTexture(GL_TEXTURE_2D, texHandle);
-    glActiveTexture(GL_TEXTURE0);
-    s.setInt("ourTexture", 0);
-    s.setMat4("transform", transform);
-    OM_GL_CHECK()
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
-    glDeleteBuffers(1, &EBO);
     return true;
 }
 
