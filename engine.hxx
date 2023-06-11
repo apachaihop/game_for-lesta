@@ -1,5 +1,6 @@
 #ifndef OPENGL_WINDOW_ENGINE_HXX
 #define OPENGL_WINDOW_ENGINE_HXX
+#include <SDL_events.h>
 #include <iosfwd>
 #include <string>
 
@@ -24,37 +25,18 @@ enum class event
     exit
 };
 
-struct vertex
+class sound_buffer
 {
-    float x = 0.f; // vertex position
-    float y = 0.f;
-    float z = 0.f;
-
-    float r = 0.f;
-    float g = 0.f;
-    float b = 0.f;
-
-    float tx = 0.f; // texture coordinate
-    float ty = 0.f;
-};
-
-struct triangle
-{
-    triangle()
+public:
+    enum class properties
     {
-        v[0] = vertex();
-        v[1] = vertex();
-        v[2] = vertex();
-    }
-    triangle(vertex v0, vertex v1, vertex v2)
-    {
-        v[0] = v0;
-        v[1] = v1;
-        v[2] = v2;
-    }
-    vertex v[3];
-};
+        once,
+        looped
+    };
 
+    virtual ~sound_buffer();
+    virtual void play(const properties) = 0;
+};
 class engine
 {
 public:
@@ -67,4 +49,5 @@ public:
 engine* create_engine();
 void    destroy_engine(engine* e);
 } // namespace eng
+bool ImGui_ImplSDL3_ProcessEvent(SDL_Event* event);
 #endif // OPENGL_WINDOW_ENGINE_HXX

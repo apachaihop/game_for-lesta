@@ -24,20 +24,6 @@ int main()
     texture tex_fone("fone.png");
     texture tex_tank("tank.png");
 
-    eng::vertex   v0 = { 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 2.0f, 1.0f };
-    eng::vertex   v1 = { 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 2.0f, 0.0f };
-    eng::vertex   v2 = { -1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f };
-    eng::vertex   v3 = { -1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f };
-    eng::triangle t1(v0, v1, v2);
-    eng::triangle t2(v3, v2, v1);
-
-    eng::vertex   v4 = { -0.9f, -0.9f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f };
-    eng::vertex   v5 = { -0.9f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f };
-    eng::vertex   v6 = { -1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f };
-    eng::vertex   v7 = { -1.0f, -0.9f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f };
-    eng::triangle t3(v4, v5, v6);
-    eng::triangle t4(v7, v6, v5);
-
     glm::mat4 transform  = glm::mat4(1.0f);
     glm::mat4 transform0 = glm::mat4(1.0f);
     shader    shader_for_tank("vertex.vert", "fragment.frag");
@@ -59,8 +45,7 @@ int main()
     float angle = 0.0f;
     float dx    = 0.0f;
     float dy    = 0.0f;
-    float cur_x = (t3.v[2].x + (t3.v[1].x - t3.v[2].x) / 2);
-    float cur_y = t3.v[2].y + (t3.v[0].y - t3.v[2].y) / 2;
+
     float new_angle;
     bool  continue_loop = true;
     while (continue_loop)
@@ -69,6 +54,7 @@ int main()
 
         while (SDL_PollEvent(&e))
         {
+            ImGui_ImplSDL3_ProcessEvent(&e);
             if (e.type == SDL_EVENT_QUIT)
             {
                 continue_loop = false;
@@ -78,22 +64,23 @@ int main()
             {
                 if (e.key.keysym.sym == SDLK_w)
                 {
-                    dy += 0.01f;
+                    dy += 1.0f;
                     angle = 0.0f;
                 }
                 if (e.key.keysym.sym == SDLK_s)
                 {
-                    dy -= 0.01f;
+                    dy -= 1.0f;
+                    angle = 180.0f;
                 }
                 if (e.key.keysym.sym == SDLK_d)
                 {
-                    dx += 0.01f;
-                    angle = -90.0f;
+                    dx += 1.0f;
+                    angle = 90.0f;
                 }
                 if (e.key.keysym.sym == SDLK_a)
                 {
-                    dx -= 0.01f;
-                    angle = 90.0f;
+                    dx -= 1.0f;
+                    angle = -90.0f;
                 }
             }
         }
@@ -105,9 +92,9 @@ int main()
                         glm::vec3(1.0f, 1.0f, 1.0f));
 
         tank.DrawSprite(tex_tank,
-                        glm::vec2(10, height - 40),
+                        glm::vec2(10 + dx, height - 40 - dy),
                         glm::vec2(40.0f, 40.0f),
-                        0.0f,
+                        angle,
                         glm::vec3(1.0f, 1.0f, 1.0f));
         engine->swap_buff();
     }
