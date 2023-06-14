@@ -48,6 +48,11 @@ int main()
 
     float new_angle;
     bool  continue_loop = true;
+
+    eng::sound_buffer* music = engine->create_sound_buffer("sample.wav");
+    assert(music != nullptr);
+
+    music->play(eng::sound_buffer::properties::looped);
     while (continue_loop)
     {
         SDL_Event e;

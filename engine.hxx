@@ -40,10 +40,12 @@ public:
 class engine
 {
 public:
-    virtual bool initialize_engine() = 0;
-    virtual bool get_input(event& e) = 0;
-    virtual bool rebind_key()        = 0;
-    virtual bool swap_buff()         = 0;
+    virtual bool          initialize_engine()                        = 0;
+    virtual bool          get_input(event& e)                        = 0;
+    virtual bool          rebind_key()                               = 0;
+    virtual bool          swap_buff()                                = 0;
+    virtual sound_buffer* create_sound_buffer(std::string_view path) = 0;
+    virtual void          destroy_sound_buffer(sound_buffer*)        = 0;
 };
 
 engine* create_engine();
