@@ -1,9 +1,11 @@
+#include "glad/glad.h"
+
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_audio.h>
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_video.h>
-
 #include <SDL_stdinc.h>
+
 #include <algorithm>
 #include <array>
 #include <cassert>
@@ -17,15 +19,19 @@
 #include <sstream>
 #include <vector>
 
-#include "glad/glad.h"
+
 #include "imgui.h"
 #include "stb_image.h"
 
-#include "shader.hxx"
-#include "sprite.hxx"
-#include "texture.hxx"
-
 #include "engine.hxx"
+
+#ifdef __WIN32
+#define GLES_MAJOR_VERSION 3
+#define GLES_MINOR_VERSION 0
+#else
+#define GLES_MAJOR_VERSION 3
+#define GLES_MINOR_VERSION 2
+#endif
 
 struct ImGui_ImplSDL3_Data
 {
@@ -385,13 +391,12 @@ bool engine_impl::initialize_engine()
 
     atexit(SDL_Quit);
 
-    const char* glsl_version = "#version 320 es";
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, GLES_MAJOR_VERSION);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, GLES_MINOR_VERSION);
 
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
@@ -403,7 +408,7 @@ bool engine_impl::initialize_engine()
     {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
                                  "Error",
-                                 "Couldn't create the main window.",
+                                 SDL_GetError(),
                                  NULL);
         return false;
     }
@@ -495,19 +500,6 @@ bool engine_impl::initialize_engine()
     }
     std::cout << std::flush;
     SDL_setenv("SDL_AUDIO_DRIVER", "pipewire", 0);
-
-    // TODO on win// dows 10 only directsound - works for me
-    // if (std::string_view("Windows") == SDL_GetPlatform())
-    // {
-    //     const char* selected_audio_driver = SDL_GetAudioDriver(1);
-    //     std::cout << "selected_audio_driver: " << selected_audio_driver
-    //               << std::endl;
-
-    //     if (0 != SDL_AudioInit(selected_audio_driver))
-    //     {
-    //         std::cout << "can't init SDL audio\n" << std::flush;
-    //     }
-    // }
 
     const char* default_audio_device_name = nullptr;
 

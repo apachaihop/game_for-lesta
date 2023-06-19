@@ -21,13 +21,13 @@ int main()
 
     engine->initialize_engine();
 
-    texture tex_fone("fone.png");
-    texture tex_tank("tank.png");
+    texture tex_fone("../fone.png");
+    texture tex_tank("../tank.png");
 
     glm::mat4 transform  = glm::mat4(1.0f);
     glm::mat4 transform0 = glm::mat4(1.0f);
-    shader    shader_for_tank("vertex.vert", "fragment.frag");
-    shader    shader_for_fone("vertex.vert", "fragment.frag");
+    shader    shader_for_tank("../vertex.vert", "../fragment.frag");
+    shader    shader_for_fone("../vertex.vert", "../fragment.frag");
     sprite    tank(shader_for_tank);
     sprite    fone(shader_for_fone);
     float     aspect_ratio = width / height;
@@ -49,7 +49,7 @@ int main()
     float new_angle;
     bool  continue_loop = true;
 
-    eng::sound_buffer* music = engine->create_sound_buffer("sample.wav");
+    eng::sound_buffer* music = engine->create_sound_buffer("../sample.wav");
     assert(music != nullptr);
 
     music->play(eng::sound_buffer::properties::looped);
