@@ -10,9 +10,9 @@ endif ()
 
 if (GLM_SRC_DIR)
     add_subdirectory(
-            # Specifies the directory of the CMakeLists.txt file.
+
             ${GLM_SRC_DIR}
-            # Specifies the directory for the build outputs.
+
             ${CMAKE_CURRENT_BINARY_DIR}/GLM_${ANDROID_ABI})
 endif ()
 
@@ -40,9 +40,9 @@ target_sources(
 
 set_target_properties(game PROPERTIES ENABLE_EXPORTS TRUE)
 
-target_compile_features(game PRIVATE cxx_std_20)
+target_compile_features(game PRIVATE cxx_std_17)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Android")
     find_library(SDL3_LIB NAMES SDL3)
 else ()
@@ -56,7 +56,7 @@ if (${CMAKE_SYSTEM_NAME} STREQUAL "Android")
 
     target_link_libraries(
             game
-            PRIVATE SDL3::SDL3-shared
+            PRIVATE SDL3::SDL3
             glm::glm
             android
             log

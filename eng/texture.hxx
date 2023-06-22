@@ -7,6 +7,7 @@
 #include <iostream>
 #include <string>
 
+#include "engine.hxx"
 #include "glad/glad.h"
 #include "stb_image.h"
 
@@ -15,6 +16,7 @@ class texture
     GLuint texID;
 
 public:
+    texture();
     texture(std::string path);
     GLuint get_ID();
     void   bind();

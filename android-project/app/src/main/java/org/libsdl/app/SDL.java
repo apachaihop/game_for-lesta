@@ -64,7 +64,7 @@ public class SDL {
             Object relinkInstance = forceMethod.invoke(null);
             Class<?> relinkInstanceClass = relinkInstance.getClass();
 
-            // Actually load the library!
+            // Actually load_file the library!
             Method loadMethod = relinkInstanceClass.getDeclaredMethod("loadLibrary", contextClass, stringClass, stringClass, relinkListenerClass);
             loadMethod.invoke(relinkInstance, mContext, libraryName, null, null);
         }

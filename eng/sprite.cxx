@@ -75,18 +75,17 @@ void sprite::DrawSprite(texture&  texture,
     model = glm::scale(model, glm::vec3(size, 1.0f));     // last scale
 
     this->s.setMat4("model", model);
-    OM_GL_CHECK()
+
     // render textured quad
     this->s.setVec3("spriteColor", color.x, color.y, color.z);
-    OM_GL_CHECK()
+
     texture.bind();
-    OM_GL_CHECK()
+
     glActiveTexture(GL_TEXTURE0);
-    OM_GL_CHECK()
+
     s.setInt("image", 0);
     glBindVertexArray(this->quadVAO);
     glDrawArrays(GL_TRIANGLES, 0, 6);
-    OM_GL_CHECK()
     glBindVertexArray(0);
 }
 

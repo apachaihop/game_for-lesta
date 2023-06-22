@@ -38,7 +38,7 @@ Index of this file:
 //    | BeginChild()                            - (if ScrollX/ScrollY is set)
 //    | TableBeginInitMemory()                  - first time table is used
 //    | TableResetSettings()                    - on settings reset
-//    | TableLoadSettings()                     - on settings load
+//    | TableLoadSettings()                     - on settings load_file
 //    | TableBeginApplyRequests()               - apply queued resizing/reordering/hiding requests
 //    | - TableSetColumnWidth()                 - apply resizing width (for mouse resize, often requested by previous frame)
 //    |    - TableUpdateColumnsWeightFromWidth()- recompute columns weights (of stretch columns) from their respective width

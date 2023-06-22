@@ -2,16 +2,18 @@
 #define OPENGL_WINDOW_ENGINE_HXX
 #include <SDL_events.h>
 #include <iosfwd>
+#include <memory>
+#include <streambuf>
 #include <string>
 
-#include <SDL3/SDL_main.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 namespace eng
 {
-constexpr int width  = 1200;
-constexpr int height = 920;
+constexpr int  width    = 1200;
+constexpr int  height   = 920;
+constexpr bool dev_mode = false;
 enum class event
 {
     up,
@@ -24,6 +26,65 @@ enum class event
     start,
     exit
 };
+struct membuf : public std::streambuf
+{
+    membuf()
+        : std::streambuf()
+        , buf()
+        , buf_size(0)
+    {
+    }
+    membuf(std::unique_ptr<char[]> buffer, size_t size)
+        : std::streambuf()
+        , buf(std::move(buffer))
+        , buf_size(size)
+    {
+        char* beg_ptr = buf.get();
+        char* end_ptr = beg_ptr + buf_size;
+        setg(beg_ptr, beg_ptr, end_ptr);
+        setp(beg_ptr, end_ptr);
+    }
+    membuf(membuf&& other)
+    {
+        setp(nullptr, nullptr);
+        setg(nullptr, nullptr, nullptr);
+
+        other.swap(*this);
+
+        buf      = std::move(other.buf);
+        buf_size = other.buf_size;
+
+        other.buf_size = 0;
+    }
+
+    pos_type seekoff(off_type               pos,
+                     std::ios_base::seekdir seek_dir,
+                     std::ios_base::openmode) override
+    {
+
+        if (seek_dir == std::ios_base::beg)
+        {
+            return 0 + pos;
+        }
+        else if (seek_dir == std::ios_base::end)
+        {
+            return buf_size + pos;
+        }
+        else
+        {
+            return egptr() - gptr();
+        }
+    }
+
+    char*  begin() const { return eback(); }
+    size_t size() const { return buf_size; }
+
+private:
+    std::unique_ptr<char[]> buf;
+    size_t                  buf_size;
+};
+
+membuf load(std::string path);
 
 class sound_buffer
 {

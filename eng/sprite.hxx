@@ -15,6 +15,7 @@
 class sprite
 {
 public:
+    sprite();
     sprite(shader& s);
 
     ~sprite();

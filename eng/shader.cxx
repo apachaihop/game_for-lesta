@@ -5,33 +5,24 @@
 #include "shader.hxx"
 shader::shader(std::string vertexPath, std::string fragmentPath)
 {
-    std::string   vertexCode;
-    std::string   fragmentCode;
-    std::ifstream vShaderFile;
-    std::ifstream fShaderFile;
-    // ensure ifstream objects can throw exceptions:
-    vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-    fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-    try
-    {
-        // open files
-        vShaderFile.open(vertexPath.c_str());
-        fShaderFile.open(fragmentPath.c_str());
-        std::stringstream vShaderStream, fShaderStream;
-        // read file’s buffer contents into streams
-        vShaderStream << vShaderFile.rdbuf();
-        fShaderStream << fShaderFile.rdbuf();
-        // close file handlers
-        vShaderFile.close();
-        fShaderFile.close();
-        // convert stream into string
-        vertexCode   = vShaderStream.str();
-        fragmentCode = fShaderStream.str();
-    }
-    catch (std::ifstream::failure e)
-    {
-        std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
-    }
+    std::string vertexCode;
+    std::string fragmentCode;
+
+    eng::membuf vertex_mem   = eng::load(vertexPath);
+    eng::membuf fragment_mem = eng::load(fragmentPath);
+
+    std::istream vShaderStream(&vertex_mem);
+
+    std::istream fShaderStream(&fragment_mem);
+
+    std::stringstream buff_for_v;
+    std::stringstream buff_for_f;
+    vShaderStream >> buff_for_v.rdbuf();
+    vertexCode = buff_for_v.str();
+
+    fShaderStream >> buff_for_f.rdbuf();
+    fragmentCode = buff_for_f.str();
+
     const char*  vShaderCode = vertexCode.c_str();
     const char*  fShaderCode = fragmentCode.c_str();
     unsigned int vertex, fragment;
@@ -57,7 +48,7 @@ shader::shader(std::string vertexPath, std::string fragmentPath)
     glGetShaderiv(fragment, GL_COMPILE_STATUS, &success);
     if (!success)
     {
-        glGetShaderInfoLog(vertex, 512, NULL, infoLog);
+        glGetShaderInfoLog(fragment, 512, NULL, infoLog);
         std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n"
                   << infoLog << std::endl;
     };

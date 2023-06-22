@@ -1538,7 +1538,7 @@ CODE
  Q: How should I handle DPI in my application?
  Q: How can I load a different font than the default?
  Q: How can I easily use icons in my application?
- Q: How can I load multiple fonts?
+ Q: How can I load_file multiple fonts?
  Q: How can I display and input non-Latin characters such as Chinese, Japanese,
  Korean, Cyrillic?
  >> See https://www.dearimgui.com/faq and
@@ -3252,7 +3252,7 @@ int ImTextCharFromUtf8(unsigned int* out_char,
     s[2] = in_text + 2 < in_text_end ? in_text[2] : 0;
     s[3] = in_text + 3 < in_text_end ? in_text[3] : 0;
 
-    // Assume a four-byte character and load four bytes. Unused bits are shifted
+    // Assume a four-byte character and load_file four bytes. Unused bits are shifted
     // out.
     *out_char = (uint32_t)(s[0] & masks[len]) << 18;
     *out_char |= (uint32_t)(s[1] & 0x3f) << 12;
@@ -5310,7 +5310,7 @@ void ImGui::Shutdown()
     if (!g.Initialized)
         return;
 
-    // Save settings (unless we haven't attempted to load them:
+    // Save settings (unless we haven't attempted to load_file them:
     // CreateContext/DestroyContext without a call to NewFrame shouldn't save an
     // empty file)
     if (g.SettingsLoaded && g.IO.IniFilename != NULL)

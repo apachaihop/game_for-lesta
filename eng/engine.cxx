@@ -1,25 +1,15 @@
 #include "glad/glad.h"
-
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_audio.h>
-#include <SDL3/SDL_init.h>
-#include <SDL3/SDL_video.h>
-#include <SDL_stdinc.h>
+#include <string>
 
 #ifdef __ANDROID__
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_main.h>
-#include <android/log.h>
-#define GL_GLES_PROTOTYPES 1
 #include <GLES3/gl32.h>
-#define glActiveTexture_ glActiveTexture
-#else
+#include <android/log.h>
+#endif
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_audio.h>
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_video.h>
 #include <SDL_stdinc.h>
-#endif
 
 #include <algorithm>
 #include <array>
@@ -64,14 +54,8 @@ struct ImGui_ImplSDL3_Data
 
 struct ImGui_ImplOpenGL3_Data
 {
-    GLuint GlVersion; // Extracted at runtime using GL_MAJOR_VERSION,
-                      // GL_MINOR_VERSION queries (e.g. 320 for GL 3.2)
-    char GlslVersionString[32]; // Specified by user or detected based on
-                                // compile time GL settings.
-    bool         GlProfileIsES2;
-    bool         GlProfileIsES3;
-    bool         GlProfileIsCompat;
-    GLint        GlProfileMask;
+    GLuint GlVersion;
+
     GLuint       FontTexture;
     GLuint       ShaderHandle;
     GLint        AttribLocationTex;    // Uniforms location
@@ -125,20 +109,8 @@ bool ImGui_ImplOpenGL3_CreateFontsTexture()
     // Build texture atlas
     unsigned char* pixels;
     int            width, height;
-    io.Fonts->GetTexDataAsRGBA32(
-        &pixels,
-        &width,
-        &height); // Load as RGBA 32-bit (75% of the memory is wasted, but
-                  // default font is so small) because it is more likely to be
-                  // compatible with user's existing shaders. If your
-                  // ImTextureId represent a higher-level concept than just a GL
-                  // texture id, consider calling GetTexDataAsAlpha8() instead
-                  // to save on GPU memory.
+    io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 
-    // Upload texture to graphics system
-    // (Bilinear sampling is required by default. Set 'io.Fonts->Flags |=
-    // ImFontAtlasFlags_NoBakedLines' or 'style.AntiAliasedLinesUseTex = false'
-    // to allow point/nearest sampling)
     GLint last_texture;
     glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
     glGenTextures(1, &bd->FontTexture);
@@ -288,86 +260,123 @@ class engine_impl final : public eng::engine
     std::vector<sound_buffer_impl*> sounds;
 
 public:
-    bool          initialize_engine() final;
-    bool          get_input(event& e) final;
-    bool          rebind_key() final;
+    bool initialize_engine() final;
+    bool get_input(event& e) final;
+    bool rebind_key() final;
+
     sound_buffer* create_sound_buffer(std::string_view path) final;
     void destroy_sound_buffer(sound_buffer* sound) final { delete sound; }
     bool swap_buff() final
     {
-        ImGuiIO& io = ImGui::GetIO();
-        (void)io;
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplSdl_NewFrame();
-        ImGui::NewFrame();
-
-        // 1. Show the big demo window (Most of the sample code is in
-        // ImGui::ShowDemoWindow()! You can browse its code to learn more about
-        // Dear ImGui!).
-        if (show_demo_window)
-            ImGui::ShowDemoWindow(&show_demo_window);
-
-        // 2. Show a simple window that we create ourselves. We use a Begin/End
-        // pair to create a named window.
+        if (dev_mode)
         {
-            static float f       = 0.0f;
-            static int   counter = 0;
+            ImGuiIO& io = ImGui::GetIO();
+            (void)io;
+            ImGui_ImplOpenGL3_NewFrame();
+            ImGui_ImplSdl_NewFrame();
+            ImGui::NewFrame();
 
-            ImGui::Begin("Hello, world!"); // Create a window called "Hello,
-                                           // world!" and append into it.
+            // 1. Show the big demo window (Most of the sample code is in
+            // ImGui::ShowDemoWindow()! You can browse its code to learn more
+            // about Dear ImGui!).
+            if (show_demo_window)
+                ImGui::ShowDemoWindow(&show_demo_window);
 
-            ImGui::Text(
-                "This is some useful text."); // Display some text (you can use
-                                              // a format strings too)
-            ImGui::Checkbox("Demo Window",
-                            &show_demo_window); // Edit bools storing our window
-                                                // open/close state
-            ImGui::Checkbox("Another Window", &show_another_window);
+            // 2. Show a simple window that we create ourselves. We use a
+            // Begin/End pair to create a named window.
+            {
+                static float f       = 0.0f;
+                static int   counter = 0;
 
-            ImGui::SliderFloat(
-                "float",
-                &f,
-                0.0f,
-                1.0f); // Edit 1 float using a slider from 0.0f to 1.0f
-                       // Edit 3 floats representing a color
+                ImGui::Begin("Hello, world!"); // Create a window called "Hello,
+                                               // world!" and append into it.
 
-            if (ImGui::Button(
-                    "Button")) // Buttons return true when clicked (most widgets
-                               // return true when edited/activated)
-                counter++;
-            ImGui::SameLine();
-            ImGui::Text("counter = %d", counter);
+                ImGui::Text(
+                    "This is some useful text."); // Display some text (you can
+                                                  // use a format strings too)
+                ImGui::Checkbox("Demo Window",
+                                &show_demo_window); // Edit bools storing our
+                                                    // window open/close state
+                ImGui::Checkbox("Another Window", &show_another_window);
 
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
-                        1000.0f / io.Framerate,
-                        io.Framerate);
-            ImGui::End();
+                ImGui::SliderFloat(
+                    "float",
+                    &f,
+                    0.0f,
+                    1.0f); // Edit 1 float using a slider from 0.0f to 1.0f
+                           // Edit 3 floats representing a color
+
+                if (ImGui::Button(
+                        "Button")) // Buttons return true when clicked (most
+                                   // widgets return true when edited/activated)
+                    counter++;
+                ImGui::SameLine();
+                ImGui::Text("counter = %d", counter);
+
+                ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
+                            1000.0f / io.Framerate,
+                            io.Framerate);
+                ImGui::End();
+            }
+
+            // 3. Show another simple window.
+            if (show_another_window)
+            {
+                ImGui::Begin(
+                    "Another Window",
+                    &show_another_window); // Pass a pointer to our bool
+                                           // variable (the window will have a
+                                           // closing button that will clear the
+                                           // bool when clicked)
+                ImGui::Text("Hello from another window!");
+                if (ImGui::Button("Close Me"))
+                    show_another_window = false;
+                ImGui::End();
+            }
+
+            // Rendering
+            ImGui::Render();
+
+            OM_GL_CHECK()
+            ImGui_ImplOpenGL_RenderDrawData(ImGui::GetDrawData());
         }
-
-        // 3. Show another simple window.
-        if (show_another_window)
-        {
-            ImGui::Begin(
-                "Another Window",
-                &show_another_window); // Pass a pointer to our bool variable
-                                       // (the window will have a closing button
-                                       // that will clear the bool when clicked)
-            ImGui::Text("Hello from another window!");
-            if (ImGui::Button("Close Me"))
-                show_another_window = false;
-            ImGui::End();
-        }
-
-        // Rendering
-        ImGui::Render();
-        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-        OM_GL_CHECK()
-        ImGui_ImplOpenGL_RenderDrawData(ImGui::GetDrawData());
         OM_GL_CHECK()
         SDL_GL_SwapWindow(window);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClearColor(0.0f, 220.0f, 0.2f, 0.0f);
         return true;
     }
 };
+membuf load(std::string path)
+{
+    SDL_RWops* io = SDL_RWFromFile(path.data(), "rb");
+    if (nullptr == io)
+    {
+        throw std::runtime_error("can't load_file file: " + std::string(path));
+    }
+
+    Sint64 file_size = io->size(io);
+    if (-1 == file_size)
+    {
+        throw std::runtime_error("can't determine size of file: " +
+                                 std::string(path));
+    }
+    const size_t            size = static_cast<size_t>(file_size);
+    std::unique_ptr<char[]> mem  = std::make_unique<char[]>(size);
+
+    const size_t num_readed_objects = io->read(io, mem.get(), size);
+    if (num_readed_objects != size)
+    {
+        throw std::runtime_error("can't read all content from file: " +
+                                 std::string(path));
+    }
+
+    if (0 != io->close(io))
+    {
+        throw std::runtime_error("failed close file: " + std::string(path));
+    }
+    return membuf(std::move(mem), size);
+}
 bool engine_impl::rebind_key()
 {
     std::cout << "Choose key to rebind" << std::endl;
@@ -408,8 +417,8 @@ bool engine_impl::initialize_engine()
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, GLES_MAJOR_VERSION);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, GLES_MINOR_VERSION);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
@@ -465,15 +474,6 @@ bool engine_impl::initialize_engine()
         std::clog << "error: failed to initialize glad" << std::endl;
     }
 
-    glEnable(GL_DEBUG_OUTPUT);
-    OM_GL_CHECK()
-    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-    OM_GL_CHECK()
-    glDebugMessageCallback(callback_opengl_debug, nullptr);
-    OM_GL_CHECK()
-    glDebugMessageControl(
-        GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
-    OM_GL_CHECK()
     glEnable(GL_BLEND);
     OM_GL_CHECK();
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -514,7 +514,6 @@ bool engine_impl::initialize_engine()
 
     const char* default_audio_device_name = nullptr;
 
-    // SDL_FALSE - mean get only OUTPUT audio devices
     const int num_audio_devices = SDL_GetNumAudioDevices(SDL_FALSE);
     if (num_audio_devices > 0)
     {
@@ -553,8 +552,8 @@ bool engine_impl::initialize_engine()
                   << std::flush;
 
         // unpause device
-        SDL_PlayAudioDevice(audio_device);
     }
+    SDL_PlayAudioDevice(audio_device);
     return true;
 }
 engine* create_engine()
@@ -624,6 +623,7 @@ bool engine_impl::get_input(eng::event& e)
     }
     return false;
 }
+
 class sound_buffer_impl final : public sound_buffer
 {
 public:
@@ -635,8 +635,7 @@ public:
     void play(const properties prop) final
     {
         std::lock_guard<std::mutex> lock(engine_impl::audio_mutex);
-        // here we can change properties
-        // of sound and dont collade with multithreaded playing
+
         current_index = 0;
         is_playing    = true;
         is_looped     = (prop == properties::looped);
@@ -671,7 +670,8 @@ sound_buffer_impl::sound_buffer_impl(std::string_view  path,
 
     if (nullptr == SDL_LoadWAV_RW(file, 1, &file_audio_spec, &buffer, &length))
     {
-        throw std::runtime_error(std::string("can't load wav: ") + path.data());
+        throw std::runtime_error(std::string("can't load_file wav: ") +
+                                 path.data());
     }
 
     std::cout << "--------------------------------------------\n";
@@ -1006,7 +1006,6 @@ bool ImGui_ImplOpenGL_Init()
 
     bd->GlVersion        = (GLuint)(3 * 100 + 2 * 10);
     bd->UseBufferSubData = false;
-    bd->GlProfileIsES3   = true;
 
     if (bd->GlVersion >= 320)
         io.BackendFlags |=
@@ -1210,9 +1209,7 @@ static void ImGui_ImplSDL3_UpdateMouseCursor()
 static void ImGui_ImplSDL3_UpdateGamepads()
 {
     ImGuiIO& io = ImGui::GetIO();
-    if ((io.ConfigFlags & ImGuiConfigFlags_NavEnableGamepad) ==
-        0) // FIXME: Technically feeding gamepad shouldn't depend on this now
-           // that they are regular inputs.
+    if ((io.ConfigFlags & ImGuiConfigFlags_NavEnableGamepad) == 0)
         return;
 
     // Get gamepad

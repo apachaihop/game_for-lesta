@@ -154,7 +154,7 @@ github:poppolopoppo Christian Floisand      Kevin Schmidt github:darealshinji
 // If image loading fails for any reason, the return value will be NULL,
 // and *x, *y, *channels_in_file will be unchanged. The function
 // stbi_failure_reason() can be queried for an extremely brief, end-user
-// unfriendly explanation of why the load failed. Define STBI_NO_FAILURE_STRINGS
+// unfriendly explanation of why the load_file failed. Define STBI_NO_FAILURE_STRINGS
 // to avoid compiling these strings at all, and STBI_FAILURE_USERMSG to get
 // slightly more user-friendly ones.
 //
@@ -224,8 +224,8 @@ github:poppolopoppo Christian Floisand      Kevin Schmidt github:darealshinji
 //
 // stb_image now supports loading HDR images in general, and currently
 // the Radiance .HDR file format, although the support is provided
-// generically. You can still load any file through the existing interface;
-// if you attempt to load an HDR file, it will be automatically remapped to
+// generically. You can still load_file any file through the existing interface;
+// if you attempt to load_file an HDR file, it will be automatically remapped to
 // LDR, assuming gamma 2.2 and an arbitrary scale factor defaulting to 1;
 // both of these constants can be reconfigured through this interface:
 //
@@ -240,7 +240,7 @@ github:poppolopoppo Christian Floisand      Kevin Schmidt github:darealshinji
 //
 //    float *data = stbi_loadf(filename, &x, &y, &n, 0);
 //
-// If you load LDR images through this interface, those images will
+// If you load_file LDR images through this interface, those images will
 // be promoted to floating point values, run through the inverse of
 // constants corresponding to the above:
 //
@@ -341,7 +341,7 @@ extern "C"
     //
 
     //
-    // load image by filename, open file, or memory buffer
+    // load_file image by filename, open file, or memory buffer
     //
 
     typedef struct
@@ -6906,7 +6906,7 @@ static void* stbi__tga_load(stbi__context* s, int* x, int* y, int* comp,
         {
             //   any data to skip? (offset usually = 0)
             stbi__skip(s, tga_palette_start);
-            //   load the palette
+            //   load_file the palette
             tga_palette =
                 (unsigned char*)stbi__malloc_mad2(tga_palette_len, tga_comp, 0);
             if (!tga_palette)
@@ -9053,7 +9053,7 @@ STBIDEF int stbi_is_16_bit_from_callbacks(stbi_io_callbacks const* c,
    for all supported filetypes (SpartanJ) 1.31  (2011-06-20) a few more leak
    fixes, bug in PNG handling (SpartanJ) 1.30  (2011-06-11) added ability to
    load files via callbacks to accomidate custom input streams (Ben Wenger)
-              removed deprecated format-specific test/load functions
+              removed deprecated format-specific test/load_file functions
               removed support for installable file formats (stbi_loader) --
    would have been broken for IO callbacks anyway error cases in bmp and tga
    give messages and don't leak (Raymond Barbiero, grisha) fix inefficiency in

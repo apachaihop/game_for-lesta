@@ -1,24 +1,21 @@
 #include "../../opengl_window/eng/engine.hxx"
 #include "../../opengl_window/eng/shader.hxx"
 #include "../../opengl_window/eng/sprite.hxx"
-#include "../../opengl_window/eng/texture.hxx"
 
-#include <SDL3/SDL_events.h>
 #ifdef __ANDROID__
 #include <SDL3/SDL_main.h>
+#define main SDL_main
 #endif
 
 #include <cstdlib>
-#include <memory>
-
-//@ TODO add game class
-//@ TODO add camera class
-//@ TODO add imgui simple menu
-//@ TODO add sound
-//@ TODO think about shadows
-//@TODO add game obj and heritances from it
+// TODO make button class
+// TODO end work with ball class
+// TODO make class for loading assets relates the system
+// TODO make boxes and collisions with them
+// TODO add particle
 using namespace eng;
-int main()
+
+int main(int /*argc*/, char* /*argv*/[])
 {
 
     std::unique_ptr<eng::engine, void (*)(eng::engine*)> engine(
@@ -26,38 +23,37 @@ int main()
 
     engine->initialize_engine();
 
-    texture tex_fone("../../opengl_window/res/fone.png");
-    texture tex_tank("../../opengl_window/res/tank.png");
+    texture tex_ball("res/ball.png");
+    texture tex_hole("res/hole.png");
 
-    glm::mat4 transform  = glm::mat4(1.0f);
-    glm::mat4 transform0 = glm::mat4(1.0f);
-    shader    shader_for_tank("../../opengl_window/res/vertex.vert",
-                           "../../opengl_window/res/fragment.frag");
-    shader    shader_for_fone("../../opengl_window/res/vertex.vert",
-                           "../../opengl_window/res/fragment.frag");
-    sprite    tank(shader_for_tank);
-    sprite    fone(shader_for_fone);
-    float     aspect_ratio = width / height;
-    glm::mat4 projection   = glm::ortho(0.0f,
+    shader shader_for_ball("res/vertex.vert", "res/fragment.frag");
+    shader shader_for_fone("res/vertex.vert", "res/fragment.frag");
+    shader shader_for_holl("res/vertex.vert", "res/fragment.frag");
+
+    sprite holl(shader_for_holl);
+    sprite ball(shader_for_ball);
+    sprite fone(shader_for_fone);
+
+    glm::mat4 projection = glm::ortho(0.0f,
                                       static_cast<float>(width),
                                       static_cast<float>(height),
                                       0.0f,
                                       -1.0f,
                                       1.0f);
-    shader_for_tank.use();
-    shader_for_tank.setMat4("projection", projection);
+    shader_for_ball.use();
+    shader_for_ball.setMat4("projection", projection);
     shader_for_fone.use();
     shader_for_fone.setMat4("projection", projection);
+    shader_for_holl.use();
+    shader_for_holl.setMat4("projection", projection);
 
     float angle = 0.0f;
     float dx    = 0.0f;
     float dy    = 0.0f;
 
-    float new_angle;
-    bool  continue_loop = true;
+    bool continue_loop = true;
 
-    eng::sound_buffer* music =
-        engine->create_sound_buffer("../../opengl_window/res/sample.wav");
+    eng::sound_buffer* music = engine->create_sound_buffer("res/sample.wav");
     assert(music != nullptr);
 
     music->play(eng::sound_buffer::properties::looped);
@@ -98,15 +94,14 @@ int main()
             }
         }
 
-        fone.DrawSprite(tex_fone,
-                        glm::vec2(0.0f, 0.0f),
-                        glm::vec2(width, height),
-                        0.0f,
+        holl.DrawSprite(tex_hole,
+                        glm::vec2(width / 2, 40),
+                        glm::vec2(96.0f, 54.0f),
+                        angle,
                         glm::vec3(1.0f, 1.0f, 1.0f));
-
-        tank.DrawSprite(tex_tank,
-                        glm::vec2(10 + dx, height - 40 - dy),
-                        glm::vec2(40.0f, 40.0f),
+        ball.DrawSprite(tex_ball,
+                        glm::vec2(width / 2 + dx, height / 2 - dy),
+                        glm::vec2(96.0f, 54.0f),
                         angle,
                         glm::vec3(1.0f, 1.0f, 1.0f));
         engine->swap_buff();

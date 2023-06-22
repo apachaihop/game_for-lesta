@@ -6,8 +6,14 @@
 texture::texture(std::string path)
 {
     int            width, height, nrChannels;
+    eng::membuf    mem = eng::load(path);
     unsigned char* data =
-        stbi_load(path.c_str(), &width, &height, &nrChannels, 0);
+        stbi_load_from_memory(reinterpret_cast<unsigned char*>(mem.begin()),
+                              mem.size(),
+                              &width,
+                              &height,
+                              &nrChannels,
+                              0);
 
     unsigned int texture;
     glGenTextures(1, &texture);
@@ -31,7 +37,7 @@ texture::texture(std::string path)
     }
     else
     {
-        std::cout << "Failed to load texture" << std::endl;
+        std::cout << "Failed to load_file texture" << std::endl;
         return;
     }
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
