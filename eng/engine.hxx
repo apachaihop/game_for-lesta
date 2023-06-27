@@ -6,13 +6,17 @@
 #include <streambuf>
 #include <string>
 
+#include "../game/ball_object.hxx"
+#include "../game/game_object.hxx"
+#include "text_renderer.hxx"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+
 namespace eng
 {
-constexpr int  width    = 1200;
-constexpr int  height   = 920;
+constexpr int  width    = 1280;
+constexpr int  height   = 640;
 constexpr bool dev_mode = false;
 enum class event
 {
@@ -98,15 +102,32 @@ public:
     virtual ~sound_buffer();
     virtual void play(const properties) = 0;
 };
+enum Direction
+{
+    UP,
+    RIGHT,
+    DOWN,
+    LEFT
+};
+
+typedef std::tuple<bool, Direction, glm::vec2> Collision;
+
 class engine
 {
 public:
-    virtual bool          initialize_engine()                        = 0;
-    virtual bool          get_input(event& e)                        = 0;
-    virtual bool          rebind_key()                               = 0;
-    virtual bool          swap_buff()                                = 0;
-    virtual sound_buffer* create_sound_buffer(std::string_view path) = 0;
-    virtual void          destroy_sound_buffer(sound_buffer*)        = 0;
+    int               width_a;
+    int               height_a;
+    int               mouse_X, mouse_Y;
+    bool              mouse_pressed       = false, mouse_realesed;
+    virtual bool      initialize_engine() = 0;
+    virtual bool      get_input(event& e) = 0;
+    virtual bool      rebind_key()        = 0;
+    virtual bool      swap_buff()         = 0;
+    virtual Collision check_collision(ball_object& ball, game_object& obj) = 0;
+    virtual Collision check_collision(ball_object& ball)                   = 0;
+    virtual Collision check_collision(text_renderer& text)                   = 0;
+    virtual sound_buffer* create_sound_buffer(std::string_view path)       = 0;
+    virtual void          destroy_sound_buffer(sound_buffer*)              = 0;
 };
 
 engine* create_engine();

@@ -1,4 +1,6 @@
 #include "glad/glad.h"
+#include "text_renderer.hxx"
+#include <SDL_mouse.h>
 #include <string>
 
 #ifdef __ANDROID__
@@ -241,6 +243,7 @@ static std::size_t get_sound_format_size(uint16_t format_value)
 
 sound_buffer::~sound_buffer() {}
 class sound_buffer_impl;
+
 class engine_impl final : public eng::engine
 {
     static void       audio_callback(void*, uint8_t*, int);
@@ -260,12 +263,35 @@ class engine_impl final : public eng::engine
     std::vector<sound_buffer_impl*> sounds;
 
 public:
-    bool initialize_engine() final;
-    bool get_input(event& e) final;
-    bool rebind_key() final;
-
+    bool          initialize_engine() final;
+    bool          get_input(event& e) final;
+    bool          rebind_key() final;
+    Collision     check_collision(ball_object& ball, game_object& obj) final;
+    Collision     check_collision(ball_object& ball) final;
+    Collision     check_collision(text_renderer& text) final;
     sound_buffer* create_sound_buffer(std::string_view path) final;
-    void destroy_sound_buffer(sound_buffer* sound) final { delete sound; }
+    void      destroy_sound_buffer(sound_buffer* sound) final { delete sound; }
+    Direction VectorDirection(glm::vec2 target)
+    {
+        glm::vec2 compass[] = {
+            glm::vec2(0.0f, 1.0f),  // up
+            glm::vec2(1.0f, 0.0f),  // right
+            glm::vec2(0.0f, -1.0f), // down
+            glm::vec2(-1.0f, 0.0f)  // left
+        };
+        float        max        = 0.0f;
+        unsigned int best_match = -1;
+        for (unsigned int i = 0; i < 4; i++)
+        {
+            float dot_product = glm::dot(glm::normalize(target), compass[i]);
+            if (dot_product > max)
+            {
+                max        = dot_product;
+                best_match = i;
+            }
+        }
+        return (Direction)best_match;
+    }
     bool swap_buff() final
     {
         if (dev_mode)
@@ -276,61 +302,22 @@ public:
             ImGui_ImplSdl_NewFrame();
             ImGui::NewFrame();
 
-            // 1. Show the big demo window (Most of the sample code is in
-            // ImGui::ShowDemoWindow()! You can browse its code to learn more
-            // about Dear ImGui!).
-            if (show_demo_window)
-                ImGui::ShowDemoWindow(&show_demo_window);
-
-            // 2. Show a simple window that we create ourselves. We use a
-            // Begin/End pair to create a named window.
             {
-                static float f       = 0.0f;
-                static int   counter = 0;
 
-                ImGui::Begin("Hello, world!"); // Create a window called "Hello,
-                                               // world!" and append into it.
+                float x, y;
+                x       = ImGui::GetMousePos().x;
+                y       = ImGui::GetMousePos().y;
+                mouse_X = x;
+                mouse_Y = y;
+                ImGui::Begin(
+                    "DEVELOP WINDOW"); // Create a window called "Hello,
+                                       // world!" and append into it.
 
-                ImGui::Text(
-                    "This is some useful text."); // Display some text (you can
-                                                  // use a format strings too)
-                ImGui::Checkbox("Demo Window",
-                                &show_demo_window); // Edit bools storing our
-                                                    // window open/close state
-                ImGui::Checkbox("Another Window", &show_another_window);
-
-                ImGui::SliderFloat(
-                    "float",
-                    &f,
-                    0.0f,
-                    1.0f); // Edit 1 float using a slider from 0.0f to 1.0f
-                           // Edit 3 floats representing a color
-
-                if (ImGui::Button(
-                        "Button")) // Buttons return true when clicked (most
-                                   // widgets return true when edited/activated)
-                    counter++;
-                ImGui::SameLine();
-                ImGui::Text("counter = %d", counter);
-
+                ImGui::Text("X = %f", x);
+                ImGui::Text("Y = %f", y);
                 ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
                             1000.0f / io.Framerate,
                             io.Framerate);
-                ImGui::End();
-            }
-
-            // 3. Show another simple window.
-            if (show_another_window)
-            {
-                ImGui::Begin(
-                    "Another Window",
-                    &show_another_window); // Pass a pointer to our bool
-                                           // variable (the window will have a
-                                           // closing button that will clear the
-                                           // bool when clicked)
-                ImGui::Text("Hello from another window!");
-                if (ImGui::Button("Close Me"))
-                    show_another_window = false;
                 ImGui::End();
             }
 
@@ -343,7 +330,7 @@ public:
         OM_GL_CHECK()
         SDL_GL_SwapWindow(window);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glClearColor(0.0f, 220.0f, 0.2f, 0.0f);
+        glClearColor(96.0f / 255, 205.0f / 255, 52.0f / 255, 0.9f);
         return true;
     }
 };
@@ -411,7 +398,6 @@ bool engine_impl::initialize_engine()
 
         return false;
     }
-
     atexit(SDL_Quit);
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
@@ -423,9 +409,23 @@ bool engine_impl::initialize_engine()
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
     SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1");
+#ifdef __ANDROID__
 
-    window =
-        SDL_CreateWindow("GLES3.2", eng::width, eng::height, SDL_WINDOW_OPENGL);
+    const SDL_DisplayMode* dispale_mode = SDL_GetCurrentDisplayMode(1);
+    if (!dispale_mode)
+    {
+        std::cout << "can't get current display mode: " << SDL_GetError()
+                  << std::endl;
+    }
+    width_a  = dispale_mode->w;
+    height_a = dispale_mode->h;
+    window   = SDL_CreateWindow("game", width_a, height_a, SDL_WINDOW_OPENGL);
+#else
+    width_a  = eng::width;
+    height_a = eng::height;
+    window   = SDL_CreateWindow("game", width_a, height_a, SDL_WINDOW_OPENGL);
+#endif
+
     if (!window)
     {
         SDL_ShowSimpleMessageBox(
@@ -478,7 +478,7 @@ bool engine_impl::initialize_engine()
     OM_GL_CHECK();
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     OM_GL_CHECK();
-    glViewport(0, 0, width, height);
+    glViewport(0, 0, width_a, height_a);
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
@@ -496,64 +496,51 @@ bool engine_impl::initialize_engine()
     ImGui_ImplSdl_Init(window);
     ImGui_ImplOpenGL_Init();
 
-    audio_device_spec.freq     = 48000;
-    audio_device_spec.format   = SDL_AUDIO_S16LSB;
-    audio_device_spec.channels = 2;
-    audio_device_spec.samples  = 1024; // must be power of 2
-    audio_device_spec.callback = engine_impl::audio_callback;
-    audio_device_spec.userdata = this;
+        audio_device_spec.freq     = 48000;
+        audio_device_spec.format   = SDL_AUDIO_S16LSB;
+        audio_device_spec.channels = 2;
+        audio_device_spec.samples  = 1024; // must be power of 2
+        audio_device_spec.callback = engine_impl::audio_callback;
+        audio_device_spec.userdata = this;
 
-    const int num_audio_drivers = SDL_GetNumAudioDrivers();
-    for (int i = 0; i < num_audio_drivers; ++i)
-    {
-        std::cout << "audio_driver #:" << i << " " << SDL_GetAudioDriver(i)
-                  << '\n';
-    }
-    std::cout << std::flush;
-    SDL_setenv("SDL_AUDIO_DRIVER", "pipewire", 0);
-
-    const char* default_audio_device_name = nullptr;
-
-    const int num_audio_devices = SDL_GetNumAudioDevices(SDL_FALSE);
-    if (num_audio_devices > 0)
-    {
-        default_audio_device_name =
-            SDL_GetAudioDeviceName(num_audio_devices - 1, SDL_FALSE);
-        for (int i = 0; i < num_audio_devices; ++i)
+        const int num_audio_drivers = SDL_GetNumAudioDrivers();
+        for (int i = 0; i < num_audio_drivers; ++i)
         {
-            std::cout << "audio device #" << i << ": "
-                      << SDL_GetAudioDeviceName(i, SDL_FALSE) << '\n';
+            std::cout << "audio_driver #:" << i << " " <<
+            SDL_GetAudioDriver(i)
+                      << '\n';
         }
-    }
-    std::cout << std::flush;
+        std::cout << std::flush;
+        SDL_setenv("SDL_AUDIO_DRIVER", "pipewire", 1);
 
-    audio_device = SDL_OpenAudioDevice(default_audio_device_name,
-                                       0,
-                                       &audio_device_spec,
-                                       nullptr,
-                                       SDL_AUDIO_ALLOW_ANY_CHANGE);
+        const char* default_audio_device_name = nullptr;
 
-    if (audio_device == 0)
-    {
-        std::cerr << "failed open audio device: " << SDL_GetError();
-        throw std::runtime_error("audio failed");
-    }
-    else
-    {
-        std::cout << "--------------------------------------------\n";
-        std::cout << "audio device selected: " << default_audio_device_name
-                  << '\n'
-                  << "freq: " << audio_device_spec.freq << '\n'
-                  << "format: "
-                  << get_sound_format_name(audio_device_spec.format) << '\n'
-                  << "channels: "
-                  << static_cast<uint32_t>(audio_device_spec.channels) << '\n'
-                  << "samples: " << audio_device_spec.samples << '\n'
-                  << std::flush;
+        const int num_audio_devices = SDL_GetNumAudioDevices(SDL_FALSE);
+        if (num_audio_devices > 0)
+        {
+            default_audio_device_name =
+                SDL_GetAudioDeviceName(num_audio_devices - 1, SDL_FALSE);
+            for (int i = 0; i < num_audio_devices; ++i)
+            {
+                std::cout << "audio device #" << i << ": "
+                          << SDL_GetAudioDeviceName(i, SDL_FALSE) << '\n';
+            }
+        }
+        std::cout << std::flush;
 
-        // unpause device
-    }
-    SDL_PlayAudioDevice(audio_device);
+        audio_device = SDL_OpenAudioDevice(default_audio_device_name,
+                                           0,
+                                           &audio_device_spec,
+                                           nullptr,
+                                           SDL_AUDIO_ALLOW_ANY_CHANGE);
+
+        if (audio_device == 0)
+        {
+            std::cerr << "failed open audio device: " << SDL_GetError();
+            throw std::runtime_error("audio failed");
+        }
+
+        SDL_PlayAudioDevice(audio_device);
     return true;
 }
 engine* create_engine()
@@ -623,7 +610,76 @@ bool engine_impl::get_input(eng::event& e)
     }
     return false;
 }
+Collision engine_impl::check_collision(ball_object& ball)
+{
+    glm::vec2 center(ball.position + ball.radius);
+    glm::vec2 difference = glm::vec2(mouse_X, mouse_Y) - center;
+#ifdef __ANDROID__
+    if (glm::length(difference) < ball.radius * 3)
+    {
+        return std::make_tuple(true, UP, difference);
+    }
+    {
+        return std::make_tuple(false, UP, glm::vec2(0.0f, 0.0f));
+    }
+#endif
+    if (glm::length(difference) < ball.radius * 2)
+    {
+        return std::make_tuple(true, UP, difference);
+    }
+    else
+    {
+        return std::make_tuple(false, UP, glm::vec2(0.0f, 0.0f));
+    }
+}
+Collision engine_impl::check_collision(text_renderer& text)
+{
+    glm::vec2 center(text.position + glm::vec2(text.size.x/2,text.size.y/2));
+    glm::vec2 difference = glm::vec2(mouse_X, mouse_Y) - center;
+#ifdef __ANDROID__
+    if (glm::length(difference) < ball.radius * 3)
+    {
+        return std::make_tuple(true, UP, difference);
+    }
+    {
+        return std::make_tuple(false, UP, glm::vec2(0.0f, 0.0f));
+    }
+#endif
+    if (glm::length(difference) < text.size.x||glm::length(difference) < text.size.y)
+    {
+        return std::make_tuple(true, UP, difference);
+    }
+    else
+    {
+        return std::make_tuple(false, UP, glm::vec2(0.0f, 0.0f));
+    }
+}
+Collision engine_impl::check_collision(ball_object& ball, game_object& obj)
+{ // get center point circle first
+    glm::vec2 center(ball.position + ball.radius);
+    // calculate AABB info (center, half-extents)
+    glm::vec2 aabb_half_extents(obj.size.x / 2.0f, obj.size.y / 2.0f);
+    glm::vec2 aabb_center(obj.position.x + aabb_half_extents.x,
+                          obj.position.y + aabb_half_extents.y);
+    // get difference vector between both centers
+    glm::vec2 difference = center - aabb_center;
+    glm::vec2 clamped =
+        glm::clamp(difference, -aabb_half_extents, aabb_half_extents);
+    // now that we know the clamped values, add this to AABB_center and we get
+    // the value of box closest to circle
+    glm::vec2 closest = aabb_center + clamped;
+    // now retrieve vector between center circle and closest point AABB and
+    // check if length < radius
+    difference = closest - center;
 
+    if (glm::length(difference) <
+        ball.radius) // not <= since in that case a collision also occurs when
+                     // object one exactly touches object two, which they are at
+                     // the end of each collision resolution stage.
+        return std::make_tuple(true, VectorDirection(difference), difference);
+    else
+        return std::make_tuple(false, UP, glm::vec2(0.0f, 0.0f));
+}
 class sound_buffer_impl final : public sound_buffer
 {
 public:

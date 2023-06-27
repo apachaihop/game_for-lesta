@@ -3,6 +3,7 @@
 //
 
 #include "shader.hxx"
+#include "engine.hxx"
 shader::shader(std::string vertexPath, std::string fragmentPath)
 {
     std::string vertexCode;
@@ -93,6 +94,10 @@ void shader::setMat4(const std::string& name, const glm::mat4& mat) const
 void shader::setVec3(const std::string& name, float x, float y, float z) const
 {
     glUniform3f(glGetUniformLocation(ID, name.c_str()), x, y, z);
+}
+void shader::setVec2(const std::string& name, float x, float y) const
+{
+    glUniform2f(glGetUniformLocation(ID, name.c_str()), x, y);
 }
 void shader::setVec4(
     const std::string& name, float x, float y, float z, float w) const

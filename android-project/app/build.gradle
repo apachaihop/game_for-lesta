@@ -22,7 +22,20 @@ if (glmDir == null)
 {
     throw new IllegalArgumentException("no [glmDir] property in [local.properties] file")
 }
-
+Properties properties_for_sdl_ttf = new Properties()
+properties_for_sdl_ttf .load(project.rootProject.file('local.properties').newDataInputStream())
+def sdl3_ttf_Dir = properties_for_glm.getProperty('sdl3ttf.dir')
+if (sdl3_ttf_Dir == null)
+{
+    throw new IllegalArgumentException("no [sdl3_ttf_Dir] property in [local.properties] file")
+}
+Properties properties_for_freetype = new Properties()
+properties_for_freetype  .load(project.rootProject.file('local.properties').newDataInputStream())
+def freetype_Dir = properties_for_glm.getProperty('freetype.dir')
+if (freetype_Dir == null)
+{
+    throw new IllegalArgumentException("no [freetype_Dir] property in [local.properties] file")
+}
 android {
     compileSdk 33
     ndkVersion '25.2.9519653'
@@ -38,7 +51,7 @@ android {
         externalNativeBuild {
 
              cmake {
-                 arguments "-DANDROID_STL=c++_shared", "-DSDL3_SRC_DIR=$sdl3Dir", "-DGLM_SRC_DIR=$glmDir"
+                 arguments "-DANDROID_STL=c++_shared", "-DSDL3_SRC_DIR=$sdl3Dir", "-DGLM_SRC_DIR=$glmDir","-DSDL_TTF_DIR=$sdl3_ttf_Dir","-DFREETYPE_DIR=$freetype_Dir"
              }
         }
     }

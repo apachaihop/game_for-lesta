@@ -15,7 +15,8 @@
 class sprite
 {
 public:
-    sprite();
+    sprite()
+    {};
     sprite(shader& s);
 
     ~sprite();
@@ -25,12 +26,13 @@ public:
                     glm::vec2 size   = glm::vec2(10.0f, 10.0f),
                     float     rotate = 0.0f,
                     glm::vec3 color  = glm::vec3(1.0f));
+    void initRenderData();
 
 private:
     shader       s;
     unsigned int quadVAO;
 
-    void initRenderData();
+
 };
 
 #endif // OPENGL_WINDOW_SPRITE_HXX
