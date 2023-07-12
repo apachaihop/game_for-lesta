@@ -27,9 +27,9 @@ public:
                     float     rotate = 0.0f,
                     glm::vec3 color  = glm::vec3(1.0f));
     void initRenderData();
-
-private:
     shader       s;
+private:
+
     unsigned int quadVAO;
 
 

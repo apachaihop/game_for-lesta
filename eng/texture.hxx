@@ -23,7 +23,7 @@ public:
     texture(std::string path);
     bool make_text_texture (const std::string &message, const std::string &fontFile,
                              SDL_Color          color, int fontSize);
-    GLuint get_ID();
+    GLuint *get_ID();
     void   bind();
 };
 

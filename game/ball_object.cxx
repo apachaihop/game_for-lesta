@@ -20,6 +20,8 @@ ball_object::ball_object(
                       velocity)
         , radius(radius)
 {
+
+    _msprite.initRenderData();
 }
 
 glm::vec2 ball_object::move(float        dt,

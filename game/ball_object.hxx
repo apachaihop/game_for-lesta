@@ -28,7 +28,7 @@ public:
                    unsigned int window_height);
     void draw()
     {
-        _msprite.initRenderData();
+
         size=glm::vec2(radius * 2.0f, radius * 2.0f);
         _msprite.DrawSprite(
             _mtex, this->position, this->size, this->rotation, this->color);

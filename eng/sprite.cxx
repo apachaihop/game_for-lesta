@@ -66,7 +66,7 @@ void sprite::DrawSprite(texture&  texture,
                         glm::vec3(0.0f, 0.0f, 1.0f)); // then rotate
 
     model=glm::translate(model,glm::vec3(0,-size.y/2,0));
-    model = glm::scale(model, glm::vec3(size, 1.0f));     // last scale
+    model = glm::scale(model, glm::vec3(size.x,size.y, 1.0f));     // last scale
 
     this->s.setMat4("model", model);
     OM_GL_CHECK()
@@ -93,9 +93,13 @@ void sprite::initRenderData()
     unsigned int VBO;
     float        vertices[] = {
         // pos      // tex
-        0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 1.0f,
+        1.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 0.0f,
 
-        0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f
+        0.0f, 1.0f, 0.0f, 1.0f,
+        1.0f, 1.0f, 1.0f, 1.0f,
+        1.0f, 0.0f, 1.0f, 0.0f
     };
 
     glGenVertexArrays(1, &this->quadVAO);

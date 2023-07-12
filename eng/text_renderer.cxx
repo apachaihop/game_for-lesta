@@ -14,7 +14,9 @@ void text_renderer::DrawText( std::string mess,
                              SDL_Color          color,
                              float rotate)
 {
+
   message=mess;
+
 this->text_tex.make_text_texture(mess,this->path,color,this->font_size);
 
 this->s.use();
@@ -56,6 +58,7 @@ glBindVertexArray(this->quadVAO);
 glDrawArrays(GL_TRIANGLES, 0, 6);
 
 glBindVertexArray(0);
+glDeleteTextures (1, text_tex.get_ID());
 
 
 }

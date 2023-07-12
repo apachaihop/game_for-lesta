@@ -72,7 +72,7 @@
 
         <activity
             android:name="SDLActivity"
-            android:theme="@android:style/Theme.NoTitleBar"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
 
 
             android:alwaysRetainTaskState="true"

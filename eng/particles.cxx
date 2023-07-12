@@ -29,7 +29,7 @@ void ParticleGenerator::Update(float dt, game_object &object, unsigned int newPa
         if (p.Life > 0.0f)
         {	// particle is alive, thus update
             p.Position -= p.Velocity * dt;
-            p.Color.a -= dt * 2.5f;
+            p.Color.a -= dt * 1.5f;
         }
     }
 }
@@ -116,6 +116,6 @@ void ParticleGenerator::respawnParticle(Particle &particle,game_object &object, 
     particle.Position.x = object.position.x + random_X + offset.x;
     particle.Position.y = object.position.y + random_Y + offset.y;
     particle.Color = glm::vec4(rColor, rColor, rColor, 1.0f);
-    particle.Life = 1.0f;
-    particle.Velocity = object.velocity * 0.1f;
+    particle.Life = 2.0f;
+    particle.Velocity = object.velocity * float(((rand() % 2) - 1)/2);
 }

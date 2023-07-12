@@ -1,5 +1,6 @@
 #include "glad/glad.h"
 #include "text_renderer.hxx"
+#include <SDL_hints.h>
 #include <SDL_mouse.h>
 #include <string>
 
@@ -51,7 +52,10 @@ struct ImGui_ImplSDL3_Data
     char*       ClipboardTextData;
     bool        MouseCanUseGlobalState;
 
-    ImGui_ImplSDL3_Data() { memset((void*)this, 0, sizeof(*this)); }
+    ImGui_ImplSDL3_Data()
+    {
+        memset((void*)this, 0, sizeof(*this));
+    }
 };
 
 struct ImGui_ImplOpenGL3_Data
@@ -71,7 +75,10 @@ struct ImGui_ImplOpenGL3_Data
     bool         HasClipOrigin;
     bool         UseBufferSubData;
 
-    ImGui_ImplOpenGL3_Data() { memset((void*)this, 0, sizeof(*this)); }
+    ImGui_ImplOpenGL3_Data()
+    {
+        memset((void*)this, 0, sizeof(*this));
+    }
 };
 
 bool ImGui_ImplSdl_Init(SDL_Window* window);
@@ -200,16 +207,27 @@ class CKeys
     event       ev;
 
 public:
-    CKeys() {}
+    CKeys()
+    {
+    }
     CKeys(SDL_KeyCode k, std::string n, enum event e)
         : key(k)
         , name(n)
         , ev(e)
     {
     }
-    SDL_KeyCode get_code() const { return this->key; }
-    std::string get_name() { return this->name; }
-    enum event  get_event() { return ev; }
+    SDL_KeyCode get_code() const
+    {
+        return this->key;
+    }
+    std::string get_name()
+    {
+        return this->name;
+    }
+    enum event get_event()
+    {
+        return ev;
+    }
 };
 static std::string_view get_sound_format_name(uint16_t format_value)
 {
@@ -231,17 +249,23 @@ static std::string_view get_sound_format_name(uint16_t format_value)
 static std::size_t get_sound_format_size(uint16_t format_value)
 {
     static const std::map<int, std::size_t> format = {
-        { SDL_AUDIO_U8, 1 },     { SDL_AUDIO_S8, 1 },
-        { SDL_AUDIO_S16LSB, 2 }, { SDL_AUDIO_S16MSB, 2 },
-        { SDL_AUDIO_S32LSB, 4 }, { SDL_AUDIO_S32MSB, 4 },
-        { SDL_AUDIO_F32LSB, 4 }, { SDL_AUDIO_F32MSB, 4 },
+        { SDL_AUDIO_U8, 1 },
+        { SDL_AUDIO_S8, 1 },
+        { SDL_AUDIO_S16LSB, 2 },
+        { SDL_AUDIO_S16MSB, 2 },
+        { SDL_AUDIO_S32LSB, 4 },
+        { SDL_AUDIO_S32MSB, 4 },
+        { SDL_AUDIO_F32LSB, 4 },
+        { SDL_AUDIO_F32MSB, 4 },
     };
 
     auto it = format.find(format_value);
     return it->second;
 }
 
-sound_buffer::~sound_buffer() {}
+sound_buffer::~sound_buffer()
+{
+}
 class sound_buffer_impl;
 
 class engine_impl final : public eng::engine
@@ -267,10 +291,14 @@ public:
     bool          get_input(event& e) final;
     bool          rebind_key() final;
     Collision     check_collision(ball_object& ball, game_object& obj) final;
+    Collision check_collision(ball_object& ball, wind_object& obj) final;
     Collision     check_collision(ball_object& ball) final;
     Collision     check_collision(text_renderer& text) final;
     sound_buffer* create_sound_buffer(std::string_view path) final;
-    void      destroy_sound_buffer(sound_buffer* sound) final { delete sound; }
+    void          destroy_sound_buffer(sound_buffer* sound) final
+    {
+        delete sound;
+    }
     Direction VectorDirection(glm::vec2 target)
     {
         glm::vec2 compass[] = {
@@ -371,7 +399,8 @@ bool engine_impl::rebind_key()
     std::cin >> key_name;
     auto it = std::find_if(binded_keys.begin(),
                            binded_keys.end(),
-                           [&](CKeys& k) { return k.get_name() == key_name; });
+                           [&](CKeys& k)
+                           { return k.get_name() == key_name; });
     if (it == binded_keys.end())
     {
         std::cout << "No such name" << std::endl;
@@ -398,6 +427,9 @@ bool engine_impl::initialize_engine()
 
         return false;
     }
+
+    TTF_Init();
+
     atexit(SDL_Quit);
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
@@ -405,10 +437,9 @@ bool engine_impl::initialize_engine()
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-
+    SDL_SetHint(SDL_HINT_IME_SHOW_UI, "0");
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-    SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1");
 #ifdef __ANDROID__
 
     const SDL_DisplayMode* dispale_mode = SDL_GetCurrentDisplayMode(1);
@@ -612,10 +643,10 @@ bool engine_impl::get_input(eng::event& e)
 }
 Collision engine_impl::check_collision(ball_object& ball)
 {
-    glm::vec2 center(ball.position + ball.radius);
+    glm::vec2 center(glm::vec2(width_a/2,height_a/2) + ball.radius);
     glm::vec2 difference = glm::vec2(mouse_X, mouse_Y) - center;
 #ifdef __ANDROID__
-    if (glm::length(difference) < ball.radius * 3)
+    if (glm::length(difference) < ball.radius * 4)
     {
         return std::make_tuple(true, UP, difference);
     }
@@ -637,7 +668,7 @@ Collision engine_impl::check_collision(text_renderer& text)
     glm::vec2 center(text.position + glm::vec2(text.size.x/2,text.size.y/2));
     glm::vec2 difference = glm::vec2(mouse_X, mouse_Y) - center;
 #ifdef __ANDROID__
-    if (glm::length(difference) < ball.radius * 3)
+    if (glm::length(difference) < 2*text.size.x||glm::length(difference) < 2*text.size.y)
     {
         return std::make_tuple(true, UP, difference);
     }
@@ -680,6 +711,15 @@ Collision engine_impl::check_collision(ball_object& ball, game_object& obj)
     else
         return std::make_tuple(false, UP, glm::vec2(0.0f, 0.0f));
 }
+Collision engine_impl::check_collision(ball_object& ball, wind_object& obj) {
+    glm::vec2 center(ball.position + ball.radius);
+    if(center.x>obj.start_position.x-90&&center.x<obj.start_position.x+64)
+    {
+        return std::make_tuple(true, UP, glm::vec2(0.0f, 0.0f));
+    }
+    else return std::make_tuple(false, UP, glm::vec2(0.0f, 0.0f));
+}
+
 class sound_buffer_impl final : public sound_buffer
 {
 public:
@@ -839,7 +879,7 @@ void engine_impl::audio_callback(void*    engine_ptr,
                                    current_buff,
                                    e->audio_device_spec.format,
                                    static_cast<uint32_t>(stream_size),
-                                   SDL_MIX_MAXVOLUME);
+                                   snd->voulume);
                 snd->current_index += static_cast<uint32_t>(stream_size);
             }
 

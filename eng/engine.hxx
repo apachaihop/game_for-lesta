@@ -8,6 +8,7 @@
 
 #include "../game/ball_object.hxx"
 #include "../game/game_object.hxx"
+#include "../game/wind_object.hxx"
 #include "text_renderer.hxx"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -17,7 +18,7 @@ namespace eng
 {
 constexpr int  width    = 1280;
 constexpr int  height   = 640;
-constexpr bool dev_mode = false;
+constexpr bool dev_mode = true;
 enum class event
 {
     up,
@@ -93,6 +94,7 @@ membuf load(std::string path);
 class sound_buffer
 {
 public:
+    int voulume;
     enum class properties
     {
         once,
@@ -124,6 +126,7 @@ public:
     virtual bool      rebind_key()        = 0;
     virtual bool      swap_buff()         = 0;
     virtual Collision check_collision(ball_object& ball, game_object& obj) = 0;
+    virtual Collision check_collision(ball_object& ball, wind_object& obj) = 0;
     virtual Collision check_collision(ball_object& ball)                   = 0;
     virtual Collision check_collision(text_renderer& text)                   = 0;
     virtual sound_buffer* create_sound_buffer(std::string_view path)       = 0;

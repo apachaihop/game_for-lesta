@@ -39,6 +39,7 @@ target_sources(
         game/game.cpp
         game/game_object.cxx
         game/ball_object.cxx
+        game/wind_object.cxx
         eng/glad/glad.c
         eng/glad/glad.h
         eng/khr/khrplatform.h
@@ -50,7 +51,8 @@ target_sources(
         eng/sprite.cxx
         eng/text_renderer.cxx
         eng/particles.cxx
-        eng/button.cxx)
+        eng/button.cxx
+)
 
 set_target_properties(game PROPERTIES ENABLE_EXPORTS TRUE)
 
@@ -72,7 +74,6 @@ if (${CMAKE_SYSTEM_NAME} STREQUAL "Android")
     target_link_libraries(
             game
             PRIVATE SDL3::SDL3
-
             SDL3_ttf
             glm::glm
             android
